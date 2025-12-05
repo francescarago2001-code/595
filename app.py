@@ -3,7 +3,7 @@ from fpdf import FPDF
 from datetime import datetime
 import os
 
-# --- CLASSE PDF (uguale a prima) ---
+# --- CLASSE PDF ---
 class PDFPreventivo(FPDF):
     def header(self):
         # Logo
@@ -16,7 +16,8 @@ class PDFPreventivo(FPDF):
         self.cell(0, 10, '595 RAGO PARTS', 0, 1, 'R')
         
         self.set_font('Arial', '', 10)
-        self.cell(0, 5, 'Via Taverna, 82', 0, 1, 'R')
+        # --- INDIRIZZO CORRETTO QUI SOTTO ---
+        self.cell(0, 5, 'Via Taverna, 60', 0, 1, 'R')
         self.cell(0, 5, 'Montaquila (IS)', 0, 1, 'R')
         self.cell(0, 5, 'Tel: 339 8180199', 0, 1, 'R')
         
@@ -36,7 +37,6 @@ st.set_page_config(page_title="Preventivi 595 Rago Parts", page_icon="🚗")
 st.title("🚗 Generatore Preventivi - 595 Rago Parts")
 
 # --- GESTIONE STATO (MEMORIA) ---
-# Serve per ricordare la lista dei prodotti quando clicchi i bottoni
 if 'prodotti' not in st.session_state:
     st.session_state['prodotti'] = []
 
@@ -60,10 +60,9 @@ with c2:
 with c3:
     prezzo_prod = st.number_input("Prezzo Unit. (€)", min_value=0.0, format="%.2f", key="input_prezzo")
 with c4:
-    st.write("##") # Spaziatura per allineare il bottone
+    st.write("##") 
     if st.button("➕ Aggiungi"):
         if nome_prod:
-            # Aggiunge alla lista in memoria
             st.session_state['prodotti'].append({
                 "descrizione": nome_prod,
                 "qty": qty_prod,
@@ -71,7 +70,7 @@ with c4:
                 "totale": qty_prod * prezzo_prod
             })
             st.success(f"Aggiunto: {nome_prod}")
-            st.rerun() # Ricarica la pagina per aggiornare la tabella
+            st.rerun()
         else:
             st.error("Inserisci il nome del prodotto!")
 
@@ -81,14 +80,12 @@ if st.session_state['prodotti']:
     
     totale_imponibile = 0
     
-    # Intestazione tabella a video
     h1, h2, h3, h4, h5 = st.columns([3, 1, 1, 1, 0.5])
     h1.markdown("**Descrizione**")
     h2.markdown("**Q.ta**")
     h3.markdown("**Prezzo**")
     h4.markdown("**Totale**")
     
-    # Ciclo per mostrare i prodotti
     for i, p in enumerate(st.session_state['prodotti']):
         r1, r2, r3, r4, r5 = st.columns([3, 1, 1, 1, 0.5])
         r1.write(p["descrizione"])
@@ -96,7 +93,6 @@ if st.session_state['prodotti']:
         r3.write(f"€ {p['prezzo']:.2f}")
         r4.write(f"€ {p['totale']:.2f}")
         
-        # Bottone per eliminare riga
         if r5.button("🗑️", key=f"del_{i}"):
             st.session_state['prodotti'].pop(i)
             st.rerun()
@@ -121,7 +117,6 @@ if st.session_state['prodotti']:
         if not cliente:
             st.error("Inserisci il nome del cliente prima di scaricare!")
         else:
-            # Creazione PDF in background
             pdf = PDFPreventivo()
             pdf.add_page()
             
@@ -163,11 +158,10 @@ if st.session_state['prodotti']:
             pdf.cell(45, 10, "TOTALE:", 0, 0, 'R')
             pdf.cell(35, 10, f"{totale_finale:.2f} euro", 1, 1, 'R', 1)
 
-            # Salvataggio temporaneo
+            # Salvataggio e Download
             temp_filename = "preventivo_temp.pdf"
             pdf.output(temp_filename)
 
-            # Leggiamo il file per il bottone di download
             with open(temp_filename, "rb") as f:
                 pdf_data = f.read()
 
